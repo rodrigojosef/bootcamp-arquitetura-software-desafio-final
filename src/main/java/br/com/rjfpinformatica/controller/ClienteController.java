@@ -1,5 +1,6 @@
 package br.com.rjfpinformatica.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.rjfpinformatica.dto.ClienteRequestDTO;
+import br.com.rjfpinformatica.dto.ClienteResponseDTO;
+import br.com.rjfpinformatica.exception.CustomNotFoundException;
 import br.com.rjfpinformatica.model.Cliente;
 import br.com.rjfpinformatica.service.ClienteService;
 import jakarta.validation.Valid;
@@ -29,30 +33,70 @@ public class ClienteController {
 	private ModelMapper modelMapper;
 	
 	@GetMapping
-	public List<Cliente> listarTodos() {
-		return clienteService.listarTodos(); 
+	public List<ClienteResponseDTO> listarTodos() {
+		List<Cliente> listClientes = clienteService.listarTodos();
+		List<ClienteResponseDTO> listClienteResponseDTO = new ArrayList<>();
+		
+		listClientes.stream().forEach(cliente -> {
+			ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+			modelMapper.map(cliente, clienteResponseDTO);
+			listClienteResponseDTO.add(clienteResponseDTO);
+		});
+		
+		return listClienteResponseDTO; 
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id) {
+	public ResponseEntity<ClienteResponseDTO> buscarPorId(@PathVariable Long id) {
 		return clienteService.buscarPorId(id)
-	                         .map(ResponseEntity::ok)
-	                         .orElse(ResponseEntity.notFound().build());
+	                         .map(cliente -> {
+	                        	 ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+	                        	 modelMapper.map(cliente, clienteResponseDTO);
+	                        	 return ResponseEntity.ok(clienteResponseDTO);
+	                         })
+	                         .orElseThrow(() -> new CustomNotFoundException("Cliente "+id+" não encontrado."));
 	}
 	
 	@GetMapping("/nome/{nome}")
-	public List<Cliente> buscarPorNome(@PathVariable String nome) {
-		return clienteService.buscarPorNome(nome);
+	public List<ClienteResponseDTO> buscarPorNome(@PathVariable String nome) {
+		List<Cliente> listClientes = clienteService.buscarPorNome(nome);
+		List<ClienteResponseDTO> listClienteResponseDTO = new ArrayList<>();
+		
+		listClientes.stream().forEach(cliente -> {
+			ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+			modelMapper.map(cliente, clienteResponseDTO);
+			listClienteResponseDTO.add(clienteResponseDTO);
+		});
+		
+		return listClienteResponseDTO;		
 	}
 	
 	@GetMapping("/cnpj/{cnpj}")
-	public List<Cliente> buscarPorCnpj(@PathVariable String cnpj) {
-		return clienteService.buscarPorCnpj(cnpj);
+	public List<ClienteResponseDTO> buscarPorCnpj(@PathVariable String cnpj) {
+		List<Cliente> listClientes = clienteService.buscarPorCnpj(cnpj);
+		List<ClienteResponseDTO> listClienteResponseDTO = new ArrayList<>();
+		
+		listClientes.stream().forEach(cliente -> {
+			ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+			modelMapper.map(cliente, clienteResponseDTO);
+			listClienteResponseDTO.add(clienteResponseDTO);
+		});
+		
+		return listClienteResponseDTO;		
 	}
 	
 	@GetMapping("/email/{email}")
-	public List<Cliente> buscarPorEmail(@PathVariable String email) {
-		return clienteService.buscarPorEmail(email);
+	public List<ClienteResponseDTO> buscarPorEmail(@PathVariable String email) {
+		List<Cliente> listClientes = clienteService.buscarPorEmail(email);
+		List<ClienteResponseDTO> listClienteResponseDTO = new ArrayList<>();
+		
+		listClientes.stream().forEach(cliente -> {
+			ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+			modelMapper.map(cliente, clienteResponseDTO);
+			listClienteResponseDTO.add(clienteResponseDTO);
+		});
+		
+		return listClienteResponseDTO;		
 	}
 	
 	@GetMapping("/contar")
@@ -61,23 +105,44 @@ public class ClienteController {
 	}
 	
 	@PostMapping
-	public Cliente inserir(@RequestBody Cliente cliente) {
-		return clienteService.salvar(cliente);
+	public ClienteResponseDTO inserir(@Valid @RequestBody ClienteRequestDTO clienteDTO) {
+		Cliente cliente = new Cliente();
+		modelMapper.map(clienteDTO, cliente);
+		cliente = clienteService.salvar(cliente);
+		
+		ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+		modelMapper.map(cliente, clienteResponseDTO);
+		
+		return clienteResponseDTO;
 	}
 	
 	@DeleteMapping("/{id}")
-	public void deletar(@PathVariable Long id) {
-		clienteService.deletar(id);
+	public ResponseEntity<ClienteResponseDTO> deletar(@PathVariable Long id) {
+		return clienteService.buscarPorId(id)
+                .map(cliente -> {
+                	clienteService.deletar(id);
+            		
+                	ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+            		modelMapper.map(cliente, clienteResponseDTO);
+                	
+                	return ResponseEntity.ok(clienteResponseDTO);
+                })
+                .orElseThrow(() -> new CustomNotFoundException("Cliente "+id+" não encontrado."));
 	}
 	
 	@PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Long id, @Valid @RequestBody Cliente clienteRequestBody) {
+    public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO clienteDTO) {
         return clienteService.buscarPorId(id)
                 .map(cliente -> {
-                	clienteRequestBody.setId(id);
-                	modelMapper.map(clienteRequestBody, cliente);
-                    return ResponseEntity.ok(clienteService.salvar(cliente));
+                	clienteDTO.setId(id);
+                	modelMapper.map(clienteDTO, cliente);
+                	clienteService.salvar(cliente);
+            		
+                	ClienteResponseDTO clienteResponseDTO = new ClienteResponseDTO();
+            		modelMapper.map(cliente, clienteResponseDTO);
+                	
+                	return ResponseEntity.ok(clienteResponseDTO);
                 })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseThrow(() -> new CustomNotFoundException("Cliente "+id+" não encontrado."));
     }
 }
