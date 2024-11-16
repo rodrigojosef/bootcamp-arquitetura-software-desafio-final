@@ -25,9 +25,12 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {
-
-	@Autowired
-	private ClienteService clienteService;
+	
+	private final ClienteService clienteService;
+	
+    public ClienteController(ClienteService clienteService) {
+        this.clienteService = clienteService;
+    }
 	
 	@Autowired
 	private ModelMapper modelMapper;

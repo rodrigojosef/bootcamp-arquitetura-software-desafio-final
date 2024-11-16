@@ -3,7 +3,6 @@ package br.com.rjfpinformatica.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.rjfpinformatica.model.Cliente;
@@ -12,8 +11,11 @@ import br.com.rjfpinformatica.repository.ClienteRepository;
 @Service
 public class ClienteService {
 	
-	@Autowired
-	private ClienteRepository clienteRepository;
+	private final ClienteRepository clienteRepository;
+	
+	public ClienteService(ClienteRepository clienteRepository) {
+		this.clienteRepository = clienteRepository;
+	}
 	
 	public List<Cliente> listarTodos() {
 		return clienteRepository.findAll(); 
