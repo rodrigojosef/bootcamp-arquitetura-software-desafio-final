@@ -1,5 +1,7 @@
 package br.com.rjfpinformatica.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +12,7 @@ import lombok.Setter;
 @Setter
 public class ClienteRequestDTO {
 	
+	@JsonIgnore
 	private Long id;
 	
 	@NotNull(message="Nome obrigatório.")
